@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "ProductGrpc": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": "true",
+      "applicationUrl": "http://localhost:5008;https://localhost:5009"
+    }
+  }
+}
