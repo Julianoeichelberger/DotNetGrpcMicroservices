@@ -1,11 +1,9 @@
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProductGrpc.Data;
-using ProductGrpc.Protos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using ProductGrpc.Protos; 
 using System.Threading.Tasks;
 
 namespace ProductGrpc
@@ -24,7 +22,7 @@ namespace ProductGrpc
             var product = await Context.Product.FindAsync(request.Id);
             if (product == null)
             {
-
+                return null;
             }
 
             var model = new ProductModel
@@ -32,7 +30,6 @@ namespace ProductGrpc
                 Id = product.Id,
                 Name = product.Name,
                 Description = product.Description,
-                CreatedTime = Timestamp.FromDateTime(product.CreateTime),
                 Price = product.Price,
                 Status = ProductStatus.InStock
             };
@@ -56,9 +53,23 @@ namespace ProductGrpc
             return base.InsertAll(requestStream, context);
         }
 
-        public override Task GetAll(GetAllRequest request, IServerStreamWriter<ProductModel> responseStream, ServerCallContext context)
+        public override async Task GetAll(GetAllRequest request, IServerStreamWriter<ProductModel> responseStream, ServerCallContext context)
         {
-            return base.GetAll(request, responseStream, context);
+            var list = await Context.Product.ToListAsync();
+
+            foreach (var item in list)
+            {
+                var model = new ProductModel
+                {
+                    Id = item.Id,
+                    Name = item.Name,
+                    Description = item.Description,
+                    Price = item.Price,
+                    Status = ProductStatus.InStock
+                };
+
+                await responseStream.WriteAsync(model);
+            } 
         }
 
         public override Task<Empty> Test(Empty request, ServerCallContext context)

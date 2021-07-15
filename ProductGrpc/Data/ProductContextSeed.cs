@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Linq; 
 
 namespace ProductGrpc.Data
 {
@@ -29,7 +28,7 @@ namespace ProductGrpc.Data
                         Description = "Description of product 2",
                         CreateTime = DateTime.Now,
                         Price = 61,
-                        Status = Models.ProductStatus.LOW
+                        Status = Models.ProductStatus.IN_STOCK
                     },
                     new Models.Product
                     {
@@ -38,7 +37,7 @@ namespace ProductGrpc.Data
                         Description = "Description of product 3",
                         CreateTime = DateTime.Now,
                         Price = 63,
-                        Status = Models.ProductStatus.NONE
+                        Status = Models.ProductStatus.IN_STOCK
                     }
                 };
                 productContext.AddRange(products);
