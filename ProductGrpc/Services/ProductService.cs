@@ -28,7 +28,7 @@ namespace ProductGrpc
 
             if (product == null)
             {
-                return null;
+                throw new RpcException(new Status(StatusCode.NotFound, $"Product with ID={request.Id} is not found."));
             }
 
             var model = _mapper.Map<ProductModel>(product);
@@ -48,9 +48,23 @@ namespace ProductGrpc
             return model;
         }
 
-        public override Task<DeleteResponse> Delete(DeleteRequest request, ServerCallContext context)
+        public override async Task<DeleteResponse> Delete(DeleteRequest request, ServerCallContext context)
         {
-            return base.Delete(request, context);
+            var product = await _context.Product.FindAsync(request.Id);
+            if (product == null)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound, $"Product with ID={request.Id} is not found.")); 
+            }
+
+            _context.Product.Remove(product);
+            var count = await _context.SaveChangesAsync();
+
+            var response = new DeleteResponse
+            {
+                Success = count > 0
+            };
+
+            return response;
         }
 
         public override Task<InsertAllResponse> InsertAll(IAsyncStreamReader<ProductModel> requestStream, ServerCallContext context)
@@ -74,9 +88,27 @@ namespace ProductGrpc
             return base.Test(request, context);
         }
 
-        public override Task<ProductModel> Update(UpdateRequest request, ServerCallContext context)
+        public override async Task<ProductModel> Update(UpdateRequest request, ServerCallContext context)
         {
-            return base.Update(request, context);
+            var product = _mapper.Map<Product>(request.Product);
+
+            bool exists = await _context.Product.AnyAsync(p => p.Id == product.Id);
+            if (!exists)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound, $"Product with ID={request.Product.Id} is not found."));
+            }
+            _context.Entry(product).State = EntityState.Modified;
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw;
+            }
+
+            var productModel = _mapper.Map<ProductModel>(product);
+            return productModel;
         }
 
     }

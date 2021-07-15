@@ -21,8 +21,40 @@ namespace ProductGrpcClient
             await GetProductAsync(Client);
             await GetAllProductsAsync(Client);
             await AddProductAsync(Client);
+            await UpdateProductAsync(Client);
+            await DeleteProductAsync(Client);
 
             Console.ReadKey();
+        }
+
+        private static async Task DeleteProductAsync(ProductProtoService.ProductProtoServiceClient client)
+        {
+            Console.WriteLine("DeleteProduct Started...");
+            var response = await client.DeleteAsync(
+                    new DeleteRequest
+                    {
+                        Id = 4
+                    }
+                );
+            Console.WriteLine(response.ToString());
+        }
+
+        private static async Task UpdateProductAsync(ProductProtoService.ProductProtoServiceClient client)
+        {
+            Console.WriteLine("UpdateProduct Started...");
+            var response = await client.UpdateAsync(
+                    new UpdateRequest { 
+                         Product = new ProductModel {
+                             Id = 4,
+                             Name = "Product_4",
+                             Description = "Description of product 4 update",
+                             Price = 73,
+                             Status = ProductStatus.InStock,
+                             CreatedTime = Timestamp.FromDateTime(DateTime.UtcNow)
+                         }
+                    }
+                );
+            Console.WriteLine(response.ToString());
         }
 
         private static async Task AddProductAsync(ProductProtoService.ProductProtoServiceClient client)
@@ -34,6 +66,7 @@ namespace ProductGrpcClient
                 { 
                     Product = new ProductModel
                     {
+                        Id = 4,
                         Name = "Product_4",
                         Description = "Description of product 4",
                         Price = 73,
