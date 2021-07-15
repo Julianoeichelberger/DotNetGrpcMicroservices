@@ -1,9 +1,12 @@
+using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProductGrpc.Data;
-using ProductGrpc.Protos; 
+using ProductGrpc.Models;
+using ProductGrpc.Protos;
+using System;
 using System.Threading.Tasks;
 
 namespace ProductGrpc
@@ -11,36 +14,38 @@ namespace ProductGrpc
     public class ProductService: ProductProtoService.ProductProtoServiceBase
     {
         private readonly ILogger<ProductService> _logger;
-        private readonly ProductContext Context;
-        public ProductService(ProductContext productContext, ILogger<ProductService> logger)
+        private readonly ProductContext _context;
+        private readonly IMapper _mapper; 
+        public ProductService(ProductContext productContext, IMapper mapper, ILogger<ProductService> logger)
         {
             _logger = logger;
-            Context = productContext;
+            _context = productContext;
+            _mapper = mapper;
         }
         public override async Task<ProductModel> Get(GetRequest request, ServerCallContext context)
         {
-            var product = await Context.Product.FindAsync(request.Id);
+            var product = await _context.Product.FindAsync(request.Id);
+
             if (product == null)
             {
                 return null;
             }
 
-            var model = new ProductModel
-            {
-                Id = product.Id,
-                Name = product.Name,
-                Description = product.Description,
-                Price = product.Price,
-                Status = ProductStatus.InStock
-            };
-
+            var model = _mapper.Map<ProductModel>(product);
+             
             return model;
         }
 
 
-        public override Task<ProductModel> Add(AddRequest request, ServerCallContext context)
+        public override async Task<ProductModel> Add(AddRequest request, ServerCallContext context)
         {
-            return base.Add(request, context);
+            var Item = _mapper.Map<Product>(request.Product); 
+
+            _context.Product.Add(Item);
+            await _context.SaveChangesAsync();
+
+            var model = _mapper.Map<ProductModel>(Item); 
+            return model;
         }
 
         public override Task<DeleteResponse> Delete(DeleteRequest request, ServerCallContext context)
@@ -55,19 +60,11 @@ namespace ProductGrpc
 
         public override async Task GetAll(GetAllRequest request, IServerStreamWriter<ProductModel> responseStream, ServerCallContext context)
         {
-            var list = await Context.Product.ToListAsync();
+            var list = await _context.Product.ToListAsync();
 
             foreach (var item in list)
             {
-                var model = new ProductModel
-                {
-                    Id = item.Id,
-                    Name = item.Name,
-                    Description = item.Description,
-                    Price = item.Price,
-                    Status = ProductStatus.InStock
-                };
-
+                var model = _mapper.Map<ProductModel>(item); 
                 await responseStream.WriteAsync(model);
             } 
         }
