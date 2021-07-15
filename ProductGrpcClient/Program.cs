@@ -24,7 +24,33 @@ namespace ProductGrpcClient
             await UpdateProductAsync(Client);
             await DeleteProductAsync(Client);
 
+            await InsertListAsync(Client); 
+
             Console.ReadKey();
+        }
+
+        private static async Task InsertListAsync(ProductProtoService.ProductProtoServiceClient client)
+        {
+            Console.WriteLine("InsertList Started...");
+            using var clientList = client.InsertAll();
+            for (int i = 7; i < 10; i++)
+            {
+                var productModel = new ProductModel
+                {
+                    Id = i,
+                    Name = "Product_" + i.ToString(),
+                    Description = "Description of product " + i.ToString(),
+                    Price = 99,
+                    Status = ProductStatus.InStock,
+                    CreatedTime = Timestamp.FromDateTime(DateTime.UtcNow)
+                };
+                await clientList.RequestStream.WriteAsync(productModel);
+            }
+
+            await clientList.RequestStream.CompleteAsync();
+            var response = await clientList;
+
+            Console.WriteLine($"Status: {response.Success}. Insert Count: {response.InsertedCount}");
         }
 
         private static async Task DeleteProductAsync(ProductProtoService.ProductProtoServiceClient client)

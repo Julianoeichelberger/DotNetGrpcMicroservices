@@ -67,9 +67,23 @@ namespace ProductGrpc
             return response;
         }
 
-        public override Task<InsertAllResponse> InsertAll(IAsyncStreamReader<ProductModel> requestStream, ServerCallContext context)
+        public override async Task<InsertAllResponse> InsertAll(IAsyncStreamReader<ProductModel> requestStream, ServerCallContext context)
         {
-            return base.InsertAll(requestStream, context);
+            while (await requestStream.MoveNext()) 
+            {
+                var product = _mapper.Map<Product>(requestStream.Current);
+                _context.Product.Add(product);
+            }
+
+            var count = await _context.SaveChangesAsync();
+
+            var reponse = new InsertAllResponse
+            {
+                Success = count > 0,
+                InsertedCount = count
+            };
+
+            return reponse;
         }
 
         public override async Task GetAll(GetAllRequest request, IServerStreamWriter<ProductModel> responseStream, ServerCallContext context)
