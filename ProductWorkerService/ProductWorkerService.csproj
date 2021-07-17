@@ -16,6 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ShoppingCardGrpc\ShoppingCartGrpc.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Protobuf Include="..\ProductGrpc\Protos\Product.proto" GrpcServices="Client">
       <Link>Protos\Product.proto</Link>
     </Protobuf>

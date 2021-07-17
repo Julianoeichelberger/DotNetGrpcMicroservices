@@ -10,7 +10,7 @@ namespace ProductGrpcClient
 {
     class Program
     {
-        private const string host = "http://localhost:5008";
+        private const string host = "https://localhost:5009";
 
         static async Task Main(string[] args)
         {

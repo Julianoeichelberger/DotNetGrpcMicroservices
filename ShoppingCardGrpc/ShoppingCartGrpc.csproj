@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Protos\shoppingcart.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
+    <PackageReference Include="Google.Protobuf" Version="3.17.3" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.38.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="..\DiscountGrpc\Protos\discount.proto" GrpcServices="Client">
+      <Link>Protos\discount.proto</Link>
+    </Protobuf>
+    <Protobuf Include="Protos\shoppingcart.proto" GrpcServices="Server" />
+  </ItemGroup>
+
+</Project>
